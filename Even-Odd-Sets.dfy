@@ -402,7 +402,23 @@ method setScale(s: seq<int>, n: int) returns (t: seq<int>)
 method setProduct(s1: seq<int>, s2: seq<int>) returns (t: seq<int>)
 // TODO: Specify the behavior of this method so that your specification characterizes the allowed outputs,
 // and as many relevant properties of the result as you can.
+  requires isSet(s1) && isSet(s2)
+  ensures isSet(t)
+  ensures forall x :: (x in s1) ==> forall y :: (y in s2) ==> (x*y in t)
+  ensures forall z :: (z in t) ==> exists x :: x in s1 && exists y :: y in s2 && (z == x*y)
 { // TODO: Implement the method
+  t := [];
+  var i := 0;
+  while i < |s1|
+  {
+    var j := 0;
+    while j < |s2|
+    {
+      t := addToSet(t, s1[i] * s2[j]);
+      j := j + 1;
+    }
+    i := i + 1;
+  }
 }
 
 /* Converts an even set to an odd set by inverting the parity of each element  
@@ -410,5 +426,15 @@ method setProduct(s1: seq<int>, s2: seq<int>) returns (t: seq<int>)
 method invertParitySet(s: seq<int>) returns (t:seq<int>)
 // TODO: Specify the behavior of this method so that your specification characterizes the allowed outputs,
 // and as many relevant properties of the result as you can.
+  requires isSet(s) && isEvenSet(s)
+  ensures isSet(t)
+  // TODO: Complete
 { // TODO: Implement the method
+  t := [];
+  var i := 0;
+  while i < |s|
+  {
+    t := t + [invertParity(s[i])];
+    i := i + 1;
+  }
 }
