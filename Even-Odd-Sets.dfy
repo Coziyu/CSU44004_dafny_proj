@@ -435,6 +435,7 @@ method invertParitySet(s: seq<int>) returns (t:seq<int>)
   ensures forall y :: (y in t) ==> (y - 1 in s) 
   //* The condition above is defined that way specifically because invertParity(n) is defined
   //* as n+1. So we simply have to reverse it to check that any element in t, is originally from s.
+{
   t := [];
   var i := 0;
   while i < |s|
