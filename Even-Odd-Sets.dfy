@@ -68,8 +68,10 @@ lemma OddTimesOdd(n1: int, n2: int)
   ensures isOdd(n1) && isOdd(n2) ==> isOdd(n1 * n2)
 {
   if isOdd(n1) && isOdd(n2){
-    var m1 := n1 / 2;
-    var m2 := n2 / 2;
+    // var m1 := n1 / 2;
+    // var m2 := n2 / 2;
+    var m1 :| n1 == 2 * m1 + 1;
+    var m2 :| n2 == 2 * m2 + 1;
     assert n1 * n2 == 2 * (2 *m1 * m2 + m1 + m2) + 1;
     assert isOdd(n1 * n2);
   }
@@ -115,14 +117,12 @@ lemma InvertParityCorrect(n: int)
   ensures isOdd(n) ==> isEven(invertParity(n))
 {
   if (isEven(n)){
-    var m := n / 2;
-    assert n == 2 * m;
+    var m :| n == 2 * m;
     assert invertParity(n) == 2 * m + 1;
   }
   else {
-    var m := n / 2;
-    assert n == 2 * m + 1;
-    assert isOdd(n);
+    EvenOrOdd(n);
+    var m :| n == 2 * m + 1;
     assert invertParity(n) == 2 * (m + 1);
   }
 }
@@ -247,7 +247,7 @@ method addToSet(s: seq<int>, n: int) returns (b: seq<int>)
   ensures n in b
   ensures forall x :: x in s ==> x in b
   ensures forall x :: x in b ==> x in s || x == n //* Ensures that no other element is added.
-  ensures !(n in s) <==> |s| + 1 == |b| //* Equivalent to ensuring that no other elements are added and isSet(b)
+  ensures (n !in s) <==> |s| + 1 == |b| //* Equivalent to ensuring that no other elements are added and isSet(b)
   ensures n in s <==> s == b
 {
   if n in s {
@@ -260,7 +260,7 @@ method addToSet(s: seq<int>, n: int) returns (b: seq<int>)
   assert n in b;
   assert forall x :: x in s ==> x in b;
   assert forall x :: x in b ==> x in s || x == n;
-  assert !(n in s) <==> |s| + 1 == |b|;
+  assert (n !in s) <==> |s| + 1 == |b|;
   assert n in s <==> s == b;
 }
 
@@ -337,16 +337,65 @@ assert forall z :: (z in t) ==> (z in s1) && (z in s2);
 
 /* Difference of two sets s1 and s2, returning a new set t = s1 - s2 */
 method difference(s1: seq<int>, s2: seq<int>) returns (t: seq<int>)
-// TODO: Specify the behavior of this method so that your specification characterizes the allowed outputs,
-// and as many relevant properties of the result as you can.
-{ // TODO: Implement the method
+  requires isSet(s1) && isSet(s2)
+  ensures isSet(t)
+  ensures forall x :: (x in s1) && (x !in s2) ==> (x in t)
+  ensures forall z :: (z in t) ==> (z in s1) && (z !in s2)
+{
+  //* The logic behind the proof of these set operations are similar to the ones above. 
+  //* We will just talk about the new things to note here.
+  t := [];
+  var i := 0;
+  while i < |s1|
+    invariant 0 <= i <= |s1|
+    invariant isSet(t)
+    invariant forall k :: 0 <= k < i ==> (s1[k] !in s2) ==> (s1[k] in t)
+    invariant forall z :: (z in t) ==> (z in s1) && (z !in s2)
+  {
+    var foundInS2 := false;
+    var j := 0;
+    while j < |s2| && !foundInS2
+      invariant 0 <= j <= |s2|
+      invariant isSet(t)
+      invariant forall k :: 0 <= k < i ==> (s1[k] !in s2) ==> (s1[k] in t)
+      invariant foundInS2 <==> exists h :: 0 <= h < j && s2[h] == s1[i]
+      //* The above invariant helps dafny ensure that addToSet(t, s1[i]) will only 
+      //* be called iff we did not find s1[i] in s2.
+    {
+      if s1[i] == s2[j] {
+        foundInS2 := true;
+      }
+      j := j + 1;
+    }
+    if !foundInS2 {
+      assert (s1[i] !in s2);
+      t := addToSet(t, s1[i]);
+    }
+    i := i + 1;
+  }
+  assert isSet(t);
+  assert forall x :: (x in s1) && (x !in s2) ==> (x in t);
+  assert forall z :: (z in t) ==> (z in s1) && (z !in s2);
 }
 
 /* Multiplies each element of a set s by n, returning a new set t */
 method setScale(s: seq<int>, n: int) returns (t: seq<int>)
 // TODO: Specify the behavior of this method so that your specification characterizes the allowed outputs,
 // and as many relevant properties of the result as you can.
+  requires isSet(s)
+  ensures isSet(t)
+  ensures forall x :: (x in s) ==> exists y :: (y in t) && (n * x == y)
+  ensures forall y :: (y in t) ==> exists x :: (x in s) && (n * x == y)
+  // ensures n != 0 ==> |s| == |t|
+  // ensures (n == 0 && |s| != 0) ==> |t| == 1
 { // TODO: Implement the method
+  t := [];
+  var i := 0;
+  while i < |s|
+  {
+    t := addToSet(t, n * s[i]);
+    i := i + 1;
+  }
 }
 
 /* Computes the product set of two sets s1 and s2, returning a new set t = { n * m | n in s1, m in s2 }  */
