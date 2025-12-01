@@ -1,3 +1,7 @@
+/////////////////////////////////////////////////////////////
+// Nicholas Chong Zhi Yu 25361735 
+// Nicole Tan Zi Ying 25367535
+/////////////////////////////////////////////////////////////
 
 /*** Even ***/
 
@@ -72,6 +76,7 @@ lemma OddTimesOdd(n1: int, n2: int)
     // var m2 := n2 / 2;
     var m1 :| n1 == 2 * m1 + 1;
     var m2 :| n2 == 2 * m2 + 1;
+    // n1 * n2 == (2 * m1 + 1) * (2 * m2 + 1) == 4m1m2 + 2m1 + 2m2 + 1 == 2 * (2 * m1 * m2 + m1 + m2) + 1
     assert n1 * n2 == 2 * (2 *m1 * m2 + m1 + m2) + 1;
     assert isOdd(n1 * n2);
   }
@@ -386,18 +391,11 @@ method setScale(s: seq<int>, n: int) returns (t: seq<int>)
   ensures isSet(t)
   ensures forall x :: (x in s) ==> exists y :: (y in t) && (n * x == y)
   ensures forall y :: (y in t) ==> exists x :: (x in s) && (n * x == y)
-  // ensures n != 0 ==> |s| == |t|
-  // ensures (n == 0 && |s| != 0) ==> |t| == 1
 { // TODO: formally verify
   t := [];
   var i := 0;
-  if n == 0 {
-    return [0];
-  }
-  assert n != 0;
   while i < |s|
     invariant isSet(t)
-    invariant forall j :: 0 <= j < i ==> t[j] == n * s[j]
   {
     t := addToSet(t, n * s[i]);
     i := i + 1;
