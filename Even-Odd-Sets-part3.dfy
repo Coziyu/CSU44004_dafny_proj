@@ -449,6 +449,7 @@ method setScale(s: seq<int>, n: int) returns (t: seq<int>)
 // [REPORT] Rewrote this to avoid double while loops.
 // Instead we use proved procedures to simplify proof.
 // Learnt here that dafny does better with indexed access
+// TODO
 method setProduct(s1: seq<int>, s2: seq<int>) returns (t: seq<int>)
   requires isSet(s1) && isSet(s2)
   ensures isSet(t)
